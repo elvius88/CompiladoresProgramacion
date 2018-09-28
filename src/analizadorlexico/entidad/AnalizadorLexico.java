@@ -35,6 +35,11 @@ public class AnalizadorLexico {
                     System.out.println();
                     numeroLinea++;//Si es el fin de la línea incrementa el número de línea, lo imprime y sigue continua con el siguiente caracter
                     break;
+                case '"':
+                    while (true) {                        
+                        break;
+                    }
+                    break;
                 case '{':
                     break;
                 case '}':
@@ -53,8 +58,8 @@ public class AnalizadorLexico {
         }
     }
     
-    public boolean isNumerico(){
-        return true;
+    public boolean isNumerico(String s){
+        return s.matches("[0-9]");
     }
     
     public int getNumeroLinea() {
@@ -73,5 +78,18 @@ public class AnalizadorLexico {
         this.numeroColumna = numeroColumna;
     }
     
-    
+    public static void main(String[] args) {
+        AnalizadorLexico al = new AnalizadorLexico();
+        System.out.println(al.isNumerico("1"));
+        System.out.println(al.isNumerico("2"));
+        System.out.println(al.isNumerico("3"));
+        System.out.println(al.isNumerico("4"));
+        System.out.println(al.isNumerico("5"));
+        System.out.println(al.isNumerico("6"));
+        System.out.println(al.isNumerico("7"));
+        System.out.println(al.isNumerico("8"));
+        System.out.println(al.isNumerico("@"));
+        System.out.println(al.isNumerico("9"));
+        
+    }
 }
