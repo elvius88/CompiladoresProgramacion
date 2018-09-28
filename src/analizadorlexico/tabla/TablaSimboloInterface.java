@@ -14,5 +14,5 @@ public interface TablaSimboloInterface {
 
     public void initTabla();
 
-    public void initTablaSimbolo();
+    public void initTablaSimbolos();
 }
