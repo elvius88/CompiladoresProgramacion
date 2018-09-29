@@ -12,7 +12,7 @@ public interface TablaSimboloInterface {
 
     public Entrada buscar(String key);
 
-    public void initTabla();
+    public void insertarTablaSimbolos(String s, int compLex);
 
     public void initTablaSimbolos();
 }
