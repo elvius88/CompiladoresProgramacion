@@ -28,6 +28,11 @@ public class Entrada {
     public void setLexema(String lexema) {
         this.lexema = lexema;
     }
+
+    @Override
+    public String toString() {
+        return "compLex: " + this.componenteLexico + ", lexema: " + this.lexema;
+    }
     
     
 }

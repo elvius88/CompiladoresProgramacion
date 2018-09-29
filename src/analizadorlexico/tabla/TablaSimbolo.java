@@ -10,7 +10,7 @@ import java.util.HashMap;
  */
 public class TablaSimbolo implements TablaSimboloInterface {
 
-    private HashMap<String, Entrada> tabla; 
+    private HashMap<String, Entrada> tabla;
 
     public TablaSimbolo() {
         tabla = new HashMap<>();
@@ -23,11 +23,11 @@ public class TablaSimbolo implements TablaSimboloInterface {
     public void setTabla(HashMap<String, Entrada> tabla) {
         this.tabla = tabla;
     }
-    
+
     /**
      * Insertar una entrada en la tabla
-     * 
-     * @param e 
+     *
+     * @param e
      */
     @Override
     public void insertar(Entrada e) {
@@ -35,41 +35,43 @@ public class TablaSimbolo implements TablaSimboloInterface {
     }
 
     /**
+     * Busca una entrada en la tabla de símbolos
      * 
      * @param key
-     * @return 
+     * @return
      */
     @Override
     public Entrada buscar(String key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return tabla.get(key);
     }
 
     /**
+     * Inserta la entrada en la tabla de símbolos.
      * 
-     * @param s
+     * @param lexema
      * @param compLex
      */
     @Override
-    public void insertarTablaSimbolos(String s, int compLex) {
+    public void insertarTablaSimbolos(String lexema, int compLex) {
         Entrada e = new Entrada();
         e.setComponenteLexico(compLex);
-        e.setLexema(s);
+        e.setLexema(lexema);
         insertar(e);
     }
 
     /**
+     * Inicializa la tabla de símbolos
      * 
      */
     @Override
     public void initTablaSimbolos() {
-        insertarTablaSimbolos(TokenEnum.LLAVE_IZQ.getNombreToken(), TokenEnum.LLAVE_IZQ.getId());
-        insertarTablaSimbolos(TokenEnum.LLAVE_DER.getNombreToken(), TokenEnum.LLAVE_DER.getId());
-        insertarTablaSimbolos(TokenEnum.CORCHETE_IZQ.getNombreToken(), TokenEnum.CORCHETE_IZQ.getId());
-        insertarTablaSimbolos(TokenEnum.CORCHETE_DER.getNombreToken(), TokenEnum.CORCHETE_DER.getId());
-        insertarTablaSimbolos(TokenEnum.COMA.getNombreToken(), TokenEnum.COMA.getId());
-        insertarTablaSimbolos(TokenEnum.DOS_PUNTOS.getNombreToken(), TokenEnum.DOS_PUNTOS.getId());
-        insertarTablaSimbolos(TokenEnum.PR_BOOLEANO_FALSE.getNombreToken(), TokenEnum.PR_BOOLEANO_FALSE.getId());
-        insertarTablaSimbolos(TokenEnum.PR_BOOLEANO_TRUE.getNombreToken(), TokenEnum.PR_BOOLEANO_TRUE.getId());
+        insertarTablaSimbolos("{", TokenEnum.LLAVE_IZQ.getId());
+        insertarTablaSimbolos("}", TokenEnum.LLAVE_DER.getId());
+        insertarTablaSimbolos("[", TokenEnum.CORCHETE_IZQ.getId());
+        insertarTablaSimbolos("]", TokenEnum.CORCHETE_DER.getId());
+        insertarTablaSimbolos(",", TokenEnum.COMA.getId());
+        insertarTablaSimbolos(":", TokenEnum.DOS_PUNTOS.getId());
+        insertarTablaSimbolos("false", TokenEnum.PR_BOOLEANO_FALSE.getId());
+        insertarTablaSimbolos("true", TokenEnum.PR_BOOLEANO_TRUE.getId());
     }
-    
 }

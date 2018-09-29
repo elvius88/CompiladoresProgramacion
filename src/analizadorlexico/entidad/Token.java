@@ -29,6 +29,4 @@ public class Token {
         this.punteroEntrada = punteroEntrada;
     }
     
-    
-    
 }
