@@ -73,5 +73,6 @@ public class TablaSimbolo implements TablaSimboloInterface {
         insertarTablaSimbolos(":", TokenEnum.DOS_PUNTOS.getId());
         insertarTablaSimbolos("false", TokenEnum.PR_BOOLEANO_FALSE.getId());
         insertarTablaSimbolos("true", TokenEnum.PR_BOOLEANO_TRUE.getId());
+        insertarTablaSimbolos("null", TokenEnum.PR_NULL.getId());
     }
 }

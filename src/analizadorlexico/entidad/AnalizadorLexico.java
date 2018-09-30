@@ -71,17 +71,23 @@ public class AnalizadorLexico {
     }
 
     public void siguienteLexema() throws IOException {
-        int i = 0;
         char c;
-        int cInt = 0;
         lexema = "";
         Entrada entrada = new Entrada();
-        cInt = fr.read();
+        int cInt = fr.read();
+        boolean acepto = false;
+        int estado = 0;
+        int index;
+
         while (cInt != -1) {
             numeroColumna++;
             switch (c = (char) cInt) {
                 case ' ':
+                    numeroColumna++;
+                    System.out.print(c);//Si es espacio en blanco o tabulador lo imprime y sigue continua con el siguiente caracter
+                    break;
                 case '\t':
+                    numeroColumna++;
                     System.out.print(c);//Si es espacio en blanco o tabulador lo imprime y sigue continua con el siguiente caracter
                     break;
                 case '\n':
@@ -106,11 +112,11 @@ public class AnalizadorLexico {
                                 break;
                             }
                         } else if (cInt == -1) {
-                            error("Se llegó al fin del archivo sin finalizar un literal.");
+                            error("Se llegó al fin del archivo sin finalizar un literal");
                         } else {
                             lexema += c;
                         }
-                    } while (isLetra(cInt) || isNumerico(cInt));
+                    } while (isLiteralCadena(cInt));
                     lexema += '\0';
                     if (cInt != -1) {
                         c = 0;
@@ -140,28 +146,130 @@ public class AnalizadorLexico {
                 case '7':
                 case '8':
                 case '9':
+                    boolean err = false;
+                    estado = 0;
+                    acepto = false;
                     lexema = "";
-                    do {
-                        lexema += c;
-                        cInt = fr.read();
-                        c = (char) cInt;
-                    } while (isNumerico(cInt));
+                    while (!acepto) {
+                        switch (estado) {
+                            case 0://Una secuencia netamente de dígitos, puede ocurrir . o e
+                                cInt = fr.read();
+                                c = (char) cInt;
+                                if (isNumerico(c)) {
+                                    lexema += c;
+                                    estado = 0;
+                                } else if (c == '.') {
+                                    lexema += c;
+                                    estado = 1;
+                                } else if ("e".equals(String.valueOf(c))) {
+                                    lexema += c;
+                                    estado = 3;
+                                } else {
+                                    estado = 6;
+                                }
+                                break;
+                            case 1://Un punto, debe seguir un dígito
+                                cInt = fr.read();
+                                c = (char) cInt;
+                                if (isNumerico(c)) {
+                                    lexema += c;
+                                    estado = 2;
+                                } else {
+                                    error("No se esperaba \'" + c + "\'");
+                                    estado = -1;
+                                }
+                                break;
+                            case 2://La fraccion decimal, pueden seguir los digitos o e
+                                cInt = fr.read();
+                                c = (char) cInt;
+                                if (isNumerico(c)) {
+                                    lexema += c;
+                                    estado = 2;
+                                } else if ("e".equals(String.valueOf(c).toLowerCase())) {
+                                    lexema += c;
+                                    estado = 3;
+                                } else {
+                                    estado = 6;
+                                }
+                                break;
+                            case 3: //Una e, puede seguir +, - o una secuencia de digitos
+                                cInt = fr.read();
+                                c = (char) cInt;
+                                if (c == '+' || c == '-') {
+                                    lexema += c;
+                                    estado = 4;
+                                }
+                                if (isNumerico(c)) {
+                                    lexema += c;
+                                    estado = 5;
+                                } else {
+                                    error("No se esperaba '" + c + "'");
+                                    estado = -1;
+                                }
+                                break;
+                            case 4: //Necesariamente debe venir por lo menos un digito
+                                cInt = fr.read();
+                                c = (char) cInt;
+                                if (isNumerico(c)) {
+                                    lexema += c;
+                                    estado = 5;
+                                } else {
+                                    error("No se esperaba '" + c + "'");
+                                    estado = -1;
+                                }
+                                break;
+                            case 5: //Secuencia de digitos correspondiente al exponente
+                                cInt = fr.read();
+                                c = (char) cInt;
+                                if (isNumerico(c)) {
+                                    lexema += c;
+                                    estado = 5;
+                                } else {
+                                    estado = 6;
+                                }
+                                break;
+                            case 6:
+                                if (cInt != 1) {
+                                    c = 0;
+                                }
+                                lexema += c;
+                                acepto = true;
+                                token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
+                                if (token.getPunteroEntrada() == null) {
+                                    entrada.setLexema(lexema);
+                                    entrada.setComponenteLexico(TokenEnum.NUM.getId());
+                                    tablaSimbolo.insertar(entrada);
+                                    token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
+                                }
+                                token.setComponenteLexico(TokenEnum.NUM.getId());
+                                break;
+                            case -1:
+                                if (cInt == -1) {
+                                    error("No se esperaba el fin del archivo");
+                                }
+                                acepto = true;
+                                err = true;
+                                break;
+                        }
+                    }
 
                     if (cInt != -1 && !isNumerico(cInt)) {
                         c = 0;
                     }
                     lexema += '\0';
-
-                    token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
-                    if (token.getPunteroEntrada() == null) {
-                        entrada.setLexema(lexema);
-                        entrada.setComponenteLexico(TokenEnum.NUM.getId());
-
-                        tablaSimbolo.insertar(entrada);
+                    if (!err) {
                         token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
+                        if (token.getPunteroEntrada() == null) {
+                            entrada.setLexema(lexema);
+                            entrada.setComponenteLexico(TokenEnum.NUM.getId());
+
+                            tablaSimbolo.insertar(entrada);
+                            token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
+                        }
+                        token.setComponenteLexico(TokenEnum.NUM.getId());
+                        System.out.print(TokenEnum.NUM.getNombreToken() + " ");
                     }
-                    token.setComponenteLexico(TokenEnum.NUM.getId());
-                    System.out.print(TokenEnum.NUM.getNombreToken() + " ");
+
                     break;
                 case '{':
                     token.setComponenteLexico(TokenEnum.LLAVE_IZQ.getId());
@@ -194,45 +302,69 @@ public class AnalizadorLexico {
                     System.out.print(TokenEnum.DOS_PUNTOS.getNombreToken() + " ");
                     break;
                 case 't':
+                case 'T':
                     lexema = "";
-                    int id = 0;
-                    while (id < 4) {
+                    index = 0;
+                    while (index < 4) {
                         lexema += c;
                         cInt = fr.read();
                         c = (char) cInt;
-                        id++;
+                        index++;
                     }
                     if (cInt != -1) {
                         c = 0;
                     }
-                    if ("true".equals(lexema)) {
+                    if ("true".equals(lexema) || "TRUE".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_BOOLEANO_TRUE.getId());
                         token.setPunteroEntrada(tablaSimbolo.buscar("true"));
                         System.out.print(TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + " ");
 
                     } else {
-                        error("no es valor booleano.");
+                        error("no es valor booleano válido");
                     }
                     break;
                 case 'f':
+                case 'F':
                     lexema = "";
-                    int id_ = 0;
-                    while (id_ < 5) {
+                    index = 0;
+                    while (index < 5) {
                         lexema += c;
                         cInt = fr.read();
                         c = (char) cInt;
-                        id_++;
+                        index++;
                     }
                     if (cInt != -1) {
                         c = 0;
                     }
-                    if ("false".equals(lexema)) {
+                    if ("false".equals(lexema) || "FALSE".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_BOOLEANO_FALSE.getId());
                         token.setPunteroEntrada(tablaSimbolo.buscar("false"));
                         System.out.print(TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + " ");
 
                     } else {
-                        error("no es valor booleano.");
+                        error("no es valor booleano válido");
+                    }
+                    break;
+                case 'n':
+                case 'N':
+                    lexema = "";
+                    index = 0;
+                    while (index < 4) {
+                        lexema += c;
+                        cInt = fr.read();
+                        c = (char) cInt;
+                        index++;
+                    }
+                    if (cInt != -1) {
+                        c = 0;
+                    }
+                    if ("null".equals(lexema) || "NULL".equals(lexema)) {
+                        token.setComponenteLexico(TokenEnum.PR_BOOLEANO_FALSE.getId());
+                        token.setPunteroEntrada(tablaSimbolo.buscar("null"));
+                        System.out.print(TokenEnum.PR_NULL.getNombreToken() + " ");
+
+                    } else {
+                        error("no es valor nulo válido");
                     }
                     break;
                 default:
@@ -245,7 +377,7 @@ public class AnalizadorLexico {
         }
 
         if (cInt == -1) {
-            token.setComponenteLexico(-1);
+            token.setComponenteLexico(TokenEnum.EOF.getId());
             token.setPunteroEntrada(entrada);
         }
     }
@@ -257,11 +389,11 @@ public class AnalizadorLexico {
         return s.matches("[0-9]");
     }
 
-    private boolean isLetra(int cInt) {
+    private boolean isLiteralCadena(int cInt) {
         String s = "";
         char c = (char) cInt;
         s += c;
-        return s.matches("[a-zA-Z]|[áéíóúÁÉÍÓÚ ]");
+        return s.matches(".*");
     }
 
     public int getNumeroLinea() {

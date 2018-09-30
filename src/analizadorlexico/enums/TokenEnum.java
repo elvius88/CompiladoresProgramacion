@@ -5,16 +5,18 @@ package analizadorlexico.enums;
  * @author elvioc
  */
 public enum TokenEnum {
-    LLAVE_IZQ('{', "LLAVE_IZQUIERDA"),
-    LLAVE_DER('}', "LLAVE_DERECHA"),
-    CORCHETE_IZQ('[', "CORCHETE_IZQUIERDA"),
-    CORCHETE_DER(']', "CORCHETE_DERECHA"),
+    LLAVE_IZQ('{', "L_LLAVE"),
+    LLAVE_DER('}', "R_LLAVE"),
+    CORCHETE_IZQ('[', "L_CORCHETE"),
+    CORCHETE_DER(']', "R_CORCHETE"),
     COMA(',', "COMA"),
     DOS_PUNTOS(':', "DOS_PUNTOS"),
-    PR_BOOLEANO_FALSE(262, "PR_BOOLEANO_FALSE"),
-    PR_BOOLEANO_TRUE(263, "PR_BOOLEANO_TRUE"),
-    STRING(264, "STRING"),
-    NUM(265, "NUMERO");
+    PR_BOOLEANO_FALSE(256, "PR_FALSE"),
+    PR_BOOLEANO_TRUE(257, "PR_TRUE"),
+    STRING(258, "LITERAL_CADENA"),
+    NUM(259, "LITERAL_NUM"),
+    PR_NULL(260, "PR_NULL"),
+    EOF(-1, "EOF");
 
     private final int id;
     private final String nombreToken;
