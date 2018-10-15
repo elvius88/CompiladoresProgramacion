@@ -2,9 +2,10 @@ package analizadorlexico.entidad;
 
 import analizadorlexico.enums.TokenEnum;
 import analizadorlexico.tabla.TablaSimbolo;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.PushbackInputStream;
 
 /**
  *
@@ -18,7 +19,7 @@ public class AnalizadorLexico {
     private String fuente;
     private Token token;
     private TablaSimbolo tablaSimbolo;
-    FileReader fr;
+    PushbackInputStream fr;
 
     public AnalizadorLexico() {
         numeroLinea = 1;
@@ -37,7 +38,7 @@ public class AnalizadorLexico {
         try {
             if (getFuente() != null) {
                 //Abrir el fichero indicado en la variable nombreFichero
-                fr = new FileReader(getFuente());
+                fr = new PushbackInputStream(new FileInputStream(getFuente()));
                 //Leer el primer carácter
                 //Se recorre el fichero hasta encontrar el carácter -1 que marca el final del fichero
                 while (token.getComponenteLexico() != -1) {
@@ -75,8 +76,8 @@ public class AnalizadorLexico {
         lexema = "";
         Entrada entrada = new Entrada();
         int cInt = fr.read();
-        boolean acepto = false;
-        int estado = 0;
+        boolean acepto;
+        int estado;
         int index;
 
         while (cInt != -1) {
@@ -119,7 +120,7 @@ public class AnalizadorLexico {
                     } while (isLiteralCadena(cInt));
                     lexema += '\0';
                     if (cInt != -1) {
-                        c = 0;
+                        fr.unread(cInt);
                     }
                     token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                     if (token.getPunteroEntrada() == null) {
@@ -134,7 +135,6 @@ public class AnalizadorLexico {
                         token.setComponenteLexico(entrada.getComponenteLexico());
                     }
                     System.out.print(TokenEnum.STRING.getNombreToken() + " ");
-
                     break;
                 case '0':
                 case '1':
@@ -198,8 +198,7 @@ public class AnalizadorLexico {
                                 if (c == '+' || c == '-') {
                                     lexema += c;
                                     estado = 4;
-                                }
-                                if (isNumerico(c)) {
+                                } else if (isNumerico(c)) {
                                     lexema += c;
                                     estado = 5;
                                 } else {
@@ -230,7 +229,7 @@ public class AnalizadorLexico {
                                 break;
                             case 6:
                                 if (cInt != 1) {
-                                    c = 0;
+                                    fr.unread(cInt);
                                 }
                                 lexema += c;
                                 acepto = true;
@@ -251,10 +250,6 @@ public class AnalizadorLexico {
                                 err = true;
                                 break;
                         }
-                    }
-
-                    if (cInt != -1 && !isNumerico(cInt)) {
-                        c = 0;
                     }
                     lexema += '\0';
                     if (!err) {
@@ -312,7 +307,7 @@ public class AnalizadorLexico {
                         index++;
                     }
                     if (cInt != -1) {
-                        c = 0;
+                        fr.unread(cInt);
                     }
                     if ("true".equals(lexema) || "TRUE".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_BOOLEANO_TRUE.getId());
@@ -334,7 +329,7 @@ public class AnalizadorLexico {
                         index++;
                     }
                     if (cInt != -1) {
-                        c = 0;
+                        fr.unread(cInt);
                     }
                     if ("false".equals(lexema) || "FALSE".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_BOOLEANO_FALSE.getId());
@@ -356,10 +351,10 @@ public class AnalizadorLexico {
                         index++;
                     }
                     if (cInt != -1) {
-                        c = 0;
+                        fr.unread(cInt);
                     }
                     if ("null".equals(lexema) || "NULL".equals(lexema)) {
-                        token.setComponenteLexico(TokenEnum.PR_BOOLEANO_FALSE.getId());
+                        token.setComponenteLexico(TokenEnum.PR_NULL.getId());
                         token.setPunteroEntrada(tablaSimbolo.buscar("null"));
                         System.out.print(TokenEnum.PR_NULL.getNombreToken() + " ");
 
@@ -371,9 +366,7 @@ public class AnalizadorLexico {
                     error(c + " no esperado");
                     break;
             }
-            if (c != 0) {
-                cInt = fr.read();
-            }
+            cInt = fr.read();
         }
 
         if (cInt == -1) {
