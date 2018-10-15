@@ -21,11 +21,11 @@ public class AnalizadorLexico {
     private TablaSimbolo tablaSimbolo;
     PushbackInputStream fr;
 
-    public AnalizadorLexico() {
-        numeroLinea = 1;
-        numeroColumna = 0;
-        token = new Token();
-        tablaSimbolo = new TablaSimbolo();
+    public AnalizadorLexico(TablaSimbolo tablaSimbolo) {
+        this.numeroLinea = 1;
+        this.numeroColumna = 0;
+        this.token = new Token();
+        this.tablaSimbolo = tablaSimbolo;
     }
 
     public void error(String mensajeError) {
@@ -74,7 +74,7 @@ public class AnalizadorLexico {
     public void siguienteLexema() throws IOException {
         char c;
         lexema = "";
-        Entrada entrada = new Entrada();
+        Entrada entrada;
         int cInt = fr.read();
         boolean acepto;
         int estado;
@@ -124,6 +124,7 @@ public class AnalizadorLexico {
                     }
                     token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                     if (token.getPunteroEntrada() == null) {
+                        entrada = new Entrada();
                         entrada.setLexema(lexema);
                         if (lexema.length() == 3 || lexema.equals("\"\"\"")) {
 
@@ -150,6 +151,7 @@ public class AnalizadorLexico {
                     estado = 0;
                     acepto = false;
                     lexema = "";
+                    lexema += c;
                     while (!acepto) {
                         switch (estado) {
                             case 0://Una secuencia netamente de dígitos, puede ocurrir . o e
@@ -231,10 +233,10 @@ public class AnalizadorLexico {
                                 if (cInt != 1) {
                                     fr.unread(cInt);
                                 }
-                                lexema += c;
                                 acepto = true;
                                 token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                                 if (token.getPunteroEntrada() == null) {
+                                    entrada = new Entrada();
                                     entrada.setLexema(lexema);
                                     entrada.setComponenteLexico(TokenEnum.NUM.getId());
                                     tablaSimbolo.insertar(entrada);
@@ -255,9 +257,9 @@ public class AnalizadorLexico {
                     if (!err) {
                         token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                         if (token.getPunteroEntrada() == null) {
+                            entrada = new Entrada();
                             entrada.setLexema(lexema);
                             entrada.setComponenteLexico(TokenEnum.NUM.getId());
-
                             tablaSimbolo.insertar(entrada);
                             token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                         }
@@ -370,6 +372,10 @@ public class AnalizadorLexico {
         }
 
         if (cInt == -1) {
+            entrada = new Entrada();
+            entrada.setLexema(TokenEnum.EOF.getNombreToken());
+            entrada.setComponenteLexico(TokenEnum.EOF.getId());
+            tablaSimbolo.insertar(entrada);
             token.setComponenteLexico(TokenEnum.EOF.getId());
             token.setPunteroEntrada(entrada);
         }
