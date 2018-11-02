@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PushbackInputStream;
+import java.util.ArrayList;
 
 /**
  *
@@ -19,17 +20,22 @@ public class AnalizadorLexico {
     private String fuente;
     private Token token;
     private TablaSimbolo tablaSimbolo;
-    PushbackInputStream fr;
+    private ArrayList<Token> arrayTokens; //Arreglo de tokens
+    private boolean error;
+    private PushbackInputStream fr;
 
     public AnalizadorLexico(TablaSimbolo tablaSimbolo) {
         this.numeroLinea = 1;
         this.numeroColumna = 0;
         this.token = new Token();
         this.tablaSimbolo = tablaSimbolo;
+        this.arrayTokens = new ArrayList<>();
+        this.error = false;
     }
 
     public void error(String mensajeError) {
         System.err.printf("Linea %d columna %d: Error Léxico. %s.\n", getNumeroLinea(), getNumeroColumna(), mensajeError);
+        this.error = true;
     }
 
     public void leerFuente() {
@@ -43,7 +49,7 @@ public class AnalizadorLexico {
                 //Se recorre el fichero hasta encontrar el carácter -1 que marca el final del fichero
                 while (token.getComponenteLexico() != -1) {
                     //Mostrar en pantalla el carácter leído convertido a char
-                    siguienteLexema();
+                    obtenerLexemas();
                 }
             } else {
                 System.err.println("Error. No se le pasó el fuente.");
@@ -71,7 +77,7 @@ public class AnalizadorLexico {
         }
     }
 
-    public void siguienteLexema() throws IOException {
+    public void obtenerLexemas() throws IOException {
         char c;
         lexema = "";
         Entrada entrada;
@@ -368,6 +374,10 @@ public class AnalizadorLexico {
                     error(c + " no esperado");
                     break;
             }
+            if (token.getPunteroEntrada() != null) {
+                arrayTokens.add(token);
+                token = new Token();
+            }
             cInt = fr.read();
         }
 
@@ -378,6 +388,7 @@ public class AnalizadorLexico {
             tablaSimbolo.insertar(entrada);
             token.setComponenteLexico(TokenEnum.EOF.getId());
             token.setPunteroEntrada(entrada);
+            arrayTokens.add(token);
         }
     }
 
@@ -417,5 +428,21 @@ public class AnalizadorLexico {
 
     public void setFuente(String fuente) {
         this.fuente = fuente;
+    }
+
+    public ArrayList<Token> getArrayTokens() {
+        return arrayTokens;
+    }
+
+    public void setArrayTokens(ArrayList<Token> arrayTokens) {
+        this.arrayTokens = arrayTokens;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
     }
 }

@@ -28,5 +28,9 @@ public class Token {
     public void setPunteroEntrada(Entrada punteroEntrada) {
         this.punteroEntrada = punteroEntrada;
     }
-    
+
+    @Override
+    public String toString() {
+        return "Token{" + "componenteLexico=" + componenteLexico + ", punteroEntrada=" + punteroEntrada + '}';
+    }
 }
