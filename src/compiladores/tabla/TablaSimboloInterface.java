@@ -1,6 +1,6 @@
-package analizadorlexico.tabla;
+package compiladores.tabla;
 
-import analizadorlexico.entidad.Entrada;
+import compiladores.analizadorlexico.lexer.Entrada;
 
 /**
  *

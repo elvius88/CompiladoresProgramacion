@@ -1,7 +1,7 @@
-package analizadorlexico.tabla;
+package compiladores.tabla;
 
-import analizadorlexico.entidad.Entrada;
-import analizadorlexico.enums.TokenEnum;
+import compiladores.analizadorlexico.lexer.Entrada;
+import compiladores.enums.TokenEnum;
 import java.util.HashMap;
 
 /**

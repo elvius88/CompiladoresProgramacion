@@ -1,4 +1,4 @@
-package analizadorlexico.enums;
+package compiladores.enums;
 
 /**
  *

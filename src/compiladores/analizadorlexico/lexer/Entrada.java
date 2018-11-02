@@ -1,4 +1,4 @@
-package analizadorlexico.entidad;
+package compiladores.analizadorlexico.lexer;
 
 /**
  *

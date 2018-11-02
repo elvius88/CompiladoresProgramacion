@@ -1,7 +1,7 @@
-package analizadorlexico.entidad;
+package compiladores.analizadorlexico.lexer;
 
-import analizadorlexico.enums.TokenEnum;
-import analizadorlexico.tabla.TablaSimbolo;
+import compiladores.enums.TokenEnum;
+import compiladores.tabla.TablaSimbolo;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;

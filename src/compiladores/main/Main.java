@@ -1,9 +1,9 @@
-package analizadorlexico.main;
+package compiladores.main;
 
-import analizadorlexico.entidad.AnalizadorLexico;
-import analizadorlexico.entidad.Entrada;
-import analizadorlexico.entidad.Token;
-import analizadorlexico.tabla.TablaSimbolo;
+import compiladores.analizadorlexico.lexer.AnalizadorLexico;
+import compiladores.analizadorlexico.lexer.Entrada;
+import compiladores.analizadorlexico.lexer.Token;
+import compiladores.tabla.TablaSimbolo;
 import java.util.Map;
 
 /**
@@ -28,15 +28,15 @@ public class Main {
         lexer.setFuente("fuente.txt");
         //Se inicia la lectura del fuente
         lexer.leerFuente();
-        for (Token token : lexer.getArrayTokens()) {
-            System.out.println(token);
-        }
-        for (Map.Entry<String, Entrada> en : tablaSimbolo.getTabla().entrySet()) {
-            String key = en.getKey();
-            Entrada value = en.getValue();
-            System.out.println("KEY: " + key + ", VALUE: " + value);
-            
-        }
+//        for (Token token : lexer.getArrayTokens()) {
+//            System.out.println(token);
+//        }
+//        for (Map.Entry<String, Entrada> en : tablaSimbolo.getTabla().entrySet()) {
+//            String key = en.getKey();
+//            Entrada value = en.getValue();
+//            System.out.println("KEY: " + key + ", VALUE: " + value);
+//            
+//        }
         if (!lexer.isError()) System.out.println("\033[32mAnálisis léxico sin errores.\033[30m");
         //Termina de ejecutarse el programa
         System.exit(0);

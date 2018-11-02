@@ -1,7 +1,7 @@
-package analizadorsintactico.parser;
+package compiladores.analizadorsintactico.parser;
 
-import analizadorlexico.entidad.Token;
-import analizadorlexico.enums.TokenEnum;
+import compiladores.analizadorlexico.lexer.Token;
+import compiladores.enums.TokenEnum;
 
 /**
  *
