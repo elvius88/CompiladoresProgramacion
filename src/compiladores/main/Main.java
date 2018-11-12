@@ -3,6 +3,7 @@ package compiladores.main;
 import compiladores.analizadorlexico.lexer.AnalizadorLexico;
 import compiladores.analizadorlexico.lexer.Entrada;
 import compiladores.analizadorlexico.lexer.Token;
+import compiladores.analizadorsintactico.parser.AnalizadorSintactico;
 import compiladores.tabla.TablaSimbolo;
 import java.util.Map;
 
@@ -37,7 +38,15 @@ public class Main {
 //            System.out.println("KEY: " + key + ", VALUE: " + value);
 //            
 //        }
-        if (!lexer.isError()) System.out.println("\033[32mAnálisis léxico sin errores.\033[30m");
+        AnalizadorSintactico parser = new AnalizadorSintactico(tablaSimbolo, lexer);
+        if (!lexer.isError()){
+            System.out.println("\033[32m1) Análisis léxico sin errores.\033[30m");
+//            parser = new AnalizadorSintactico(tablaSimbolo, lexer);
+            parser.init();
+        }
+        if (!parser.isError()){
+            System.out.println("\033[32m2) Análisis sintáctico sin errores.\033[30m");
+        }
         //Termina de ejecutarse el programa
         System.exit(0);
     }

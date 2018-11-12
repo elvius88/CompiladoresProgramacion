@@ -1,29 +1,53 @@
 package compiladores.analizadorsintactico.parser;
 
+import compiladores.analizadorlexico.lexer.AnalizadorLexico;
 import compiladores.analizadorlexico.lexer.Token;
 import compiladores.enums.TokenEnum;
+import compiladores.tabla.TablaSimbolo;
+import java.util.ArrayList;
 
 /**
  *
  * @author elvioc
  */
 public class AnalizadorSintactico {
-    
+
     private Token token;
-    
-    public void json(){
+    private AnalizadorLexico analizadorLexico;
+    private TablaSimbolo tablaSimbolo;
+    private ArrayList<Token> arrayTokens; //Arreglo de tokens
+    private boolean error;
+    private int posicion;
+
+    public AnalizadorSintactico(TablaSimbolo tablaSimbolo, AnalizadorLexico analizadorLexico) {
+        this.tablaSimbolo = tablaSimbolo;
+        this.analizadorLexico = analizadorLexico;
+    }
+
+    public void init() {
+        this.arrayTokens = analizadorLexico.getArrayTokens();
+        this.token = arrayTokens.get(0);
+        this.posicion = 0;
+        this.error = false;
+        json();
+    }
+
+    public void json() {
         element();
     }
-    
-    public void element(){
-        switch(token.getPunteroEntrada().getLexema()){
+
+    public void element() {
+        switch (token.getPunteroEntrada().getLexema()) {
             case "[":
                 array();
+                break;
             case "{":
                 object();
+                break;
         }
     }
-    public void array(){
+
+    public void array() {
         if ('[' == token.getComponenteLexico()) {
             match("[");
             arrayPrima();
@@ -31,23 +55,13 @@ public class AnalizadorSintactico {
             error();
         }
     }
-    public void arrayPrima(){
-        if (null == token.getPunteroEntrada().getLexema()) {
-            error();
-        } else switch (token.getPunteroEntrada().getLexema()) {
-            case "[":
-            case "{":
-                elementList();
-                break;
-            case "]":
-                match("]");
-                break;
-            default:
-                error();
-                break;
-        }
+
+    public void arrayPrima() {
+        elementList();
+        match("]");
     }
-    public void object(){
+
+    public void object() {
         if ('{' == token.getComponenteLexico()) {
             match("{");
             objectPrima();
@@ -55,45 +69,53 @@ public class AnalizadorSintactico {
             error();
         }
     }
-    public void objectPrima(){
+
+    public void objectPrima() {
         attributeList();
         match("}");
     }
-    public void elementList(){
+
+    public void elementList() {
         element();
         elementListPrima();
     }
-    public void elementListPrima(){
+
+    public void elementListPrima() {
         if (',' == token.getComponenteLexico()) {
             match(",");
             element();
             elementListPrima();
         }
     }
-    public void attributeList(){
+
+    public void attributeList() {
         attribute();
         attributeListPrima();
     }
-    public void attributeListPrima(){
+
+    public void attributeListPrima() {
         if (',' == token.getComponenteLexico()) {
             match(",");
             attribute();
             attributeListPrima();
         }
     }
-    public void attribute(){
+
+    public void attribute() {
         attributeName();
         dosPuntosLexema();
         attributeValue();
     }
-    public void attributeName(){
-        if (token.getPunteroEntrada().getLexema().matches("*")) {
+
+    public void attributeName() {
+        if (token.getPunteroEntrada().getLexema().matches(".*")) {
             match(token.getPunteroEntrada().getLexema());
-        }else{
+        } else {
             error();
         }
     }
-    public void attributeValue(){
+
+    public void attributeValue() {
         if (TokenEnum.PR_BOOLEANO_FALSE.getId() == token.getComponenteLexico()) {
             match(token.getPunteroEntrada().getLexema());
         } else if (TokenEnum.PR_BOOLEANO_TRUE.getId() == token.getComponenteLexico()) {
@@ -110,21 +132,40 @@ public class AnalizadorSintactico {
             error();
         }
     }
-    public void dosPuntosLexema(){
+
+    public void dosPuntosLexema() {
         if (':' == token.getComponenteLexico()) {
             match(":");
-        }else {
+        } else {
             error();
         }
     }
-    public void match(String expToken){
+
+    public void match(String expToken) {
         if (expToken.equals(token.getPunteroEntrada().getLexema())) {
             getToken();
-        }else{
+        } else {
             error();
         }
     }
-    public void getToken(){}
-    public void error(){}
-    
+
+    public void getToken() {
+        posicion++;
+        if (posicion < arrayTokens.size()) {
+            token = arrayTokens.get(posicion);
+        }
+    }
+
+    public void error() {
+        this.error = true;
+    }
+
+    public boolean isError() {
+        return error;
+    }
+
+    public void setError(boolean error) {
+        this.error = error;
+    }
+
 }
