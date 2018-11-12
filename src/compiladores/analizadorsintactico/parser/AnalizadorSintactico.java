@@ -33,7 +33,11 @@ public class AnalizadorSintactico {
     }
 
     public void json() {
-        element();
+        if (token.getComponenteLexico() == '{' || token.getComponenteLexico() == '[') {
+            element();
+        } else {
+            error("'{' o '['");
+        }
     }
 
     public void element() {
@@ -48,12 +52,8 @@ public class AnalizadorSintactico {
     }
 
     public void array() {
-        if ('[' == token.getComponenteLexico()) {
-            match("[");
-            arrayPrima();
-        } else {
-            error();
-        }
+        match("[");
+        arrayPrima();
     }
 
     public void arrayPrima() {
@@ -62,12 +62,8 @@ public class AnalizadorSintactico {
     }
 
     public void object() {
-        if ('{' == token.getComponenteLexico()) {
-            match("{");
-            objectPrima();
-        } else {
-            error();
-        }
+        match("{");
+        objectPrima();
     }
 
     public void objectPrima() {
@@ -81,7 +77,7 @@ public class AnalizadorSintactico {
     }
 
     public void elementListPrima() {
-        if (',' == token.getComponenteLexico()) {
+        if (',' == token.getComponenteLexico() && arrayTokens.get(posicion - 1).getComponenteLexico() != '[') {
             match(",");
             element();
             elementListPrima();
@@ -103,7 +99,7 @@ public class AnalizadorSintactico {
 
     public void attribute() {
         attributeName();
-        dosPuntosLexema();
+        match(":");
         attributeValue();
     }
 
@@ -111,7 +107,7 @@ public class AnalizadorSintactico {
         if (token.getPunteroEntrada().getLexema().matches(".*")) {
             match(token.getPunteroEntrada().getLexema());
         } else {
-            error();
+            error(TokenEnum.STRING.getNombreToken());
         }
     }
 
@@ -129,15 +125,8 @@ public class AnalizadorSintactico {
         } else if ('{' == token.getComponenteLexico() || '[' == token.getComponenteLexico()) {
             element();
         } else {
-            error();
-        }
-    }
-
-    public void dosPuntosLexema() {
-        if (':' == token.getComponenteLexico()) {
-            match(":");
-        } else {
-            error();
+            error(TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + ", " + TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + ", "
+            + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + ", ELEMENT");
         }
     }
 
@@ -145,7 +134,7 @@ public class AnalizadorSintactico {
         if (expToken.equals(token.getPunteroEntrada().getLexema())) {
             getToken();
         } else {
-            error();
+            error(expToken);
         }
     }
 
@@ -156,8 +145,10 @@ public class AnalizadorSintactico {
         }
     }
 
-    public void error() {
+    public void error(String expectedToken) {
         this.error = true;
+        System.err.printf("Error sintáctico. Se esperaba el token \'%s\', vino el el token \'%s\'.\n", expectedToken, token.getPunteroEntrada().getLexema());
+//        getToken();
     }
 
     public boolean isError() {

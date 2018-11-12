@@ -91,14 +91,11 @@ public class AnalizadorLexico {
             switch (c = (char) cInt) {
                 case ' ':
                     numeroColumna++;
-                    System.out.print(c);//Si es espacio en blanco o tabulador lo imprime y sigue continua con el siguiente caracter
                     break;
                 case '\t':
                     numeroColumna++;
-                    System.out.print(c);//Si es espacio en blanco o tabulador lo imprime y sigue continua con el siguiente caracter
                     break;
                 case '\n':
-                    System.out.println();
                     numeroColumna = 0;
                     numeroLinea++;//Si es el fin de la línea incrementa el número de línea, lo imprime y sigue continua con el siguiente caracter
                     break;
@@ -141,7 +138,6 @@ public class AnalizadorLexico {
                         token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                         token.setComponenteLexico(entrada.getComponenteLexico());
                     }
-                    System.out.print(TokenEnum.STRING.getNombreToken() + " ");
                     break;
                 case '0':
                 case '1':
@@ -270,39 +266,32 @@ public class AnalizadorLexico {
                             token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
                         }
                         token.setComponenteLexico(TokenEnum.NUM.getId());
-                        System.out.print(TokenEnum.NUM.getNombreToken() + " ");
                     }
 
                     break;
                 case '{':
                     token.setComponenteLexico(TokenEnum.LLAVE_IZQ.getId());
                     token.setPunteroEntrada(tablaSimbolo.buscar("{"));
-                    System.out.print(TokenEnum.LLAVE_IZQ.getNombreToken());
                     break;
                 case '}':
                     token.setComponenteLexico(TokenEnum.LLAVE_DER.getId());
                     token.setPunteroEntrada(tablaSimbolo.buscar("}"));
-                    System.out.print(TokenEnum.LLAVE_DER.getNombreToken() + " ");
                     break;
                 case '[':
                     token.setComponenteLexico(TokenEnum.CORCHETE_IZQ.getId());
                     token.setPunteroEntrada(tablaSimbolo.buscar("["));
-                    System.out.print(TokenEnum.CORCHETE_IZQ.getNombreToken());
                     break;
                 case ']':
                     token.setComponenteLexico(TokenEnum.CORCHETE_DER.getId());
                     token.setPunteroEntrada(tablaSimbolo.buscar("]"));
-                    System.out.print(TokenEnum.CORCHETE_DER.getNombreToken() + " ");
                     break;
                 case ',':
                     token.setComponenteLexico(TokenEnum.COMA.getId());
                     token.setPunteroEntrada(tablaSimbolo.buscar(","));
-                    System.out.print(TokenEnum.COMA.getNombreToken() + " ");
                     break;
                 case ':':
                     token.setComponenteLexico(TokenEnum.DOS_PUNTOS.getId());
                     token.setPunteroEntrada(tablaSimbolo.buscar(":"));
-                    System.out.print(TokenEnum.DOS_PUNTOS.getNombreToken() + " ");
                     break;
                 case 't':
                 case 'T':
@@ -320,8 +309,6 @@ public class AnalizadorLexico {
                     if ("true".equals(lexema) || "TRUE".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_BOOLEANO_TRUE.getId());
                         token.setPunteroEntrada(tablaSimbolo.buscar("true"));
-                        System.out.print(TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + " ");
-
                     } else {
                         error("no es valor booleano válido");
                     }
@@ -342,8 +329,6 @@ public class AnalizadorLexico {
                     if ("false".equals(lexema) || "FALSE".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_BOOLEANO_FALSE.getId());
                         token.setPunteroEntrada(tablaSimbolo.buscar("false"));
-                        System.out.print(TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + " ");
-
                     } else {
                         error("no es valor booleano válido");
                     }
@@ -364,8 +349,6 @@ public class AnalizadorLexico {
                     if ("null".equals(lexema) || "NULL".equals(lexema)) {
                         token.setComponenteLexico(TokenEnum.PR_NULL.getId());
                         token.setPunteroEntrada(tablaSimbolo.buscar("null"));
-                        System.out.print(TokenEnum.PR_NULL.getNombreToken() + " ");
-
                     } else {
                         error("no es valor nulo válido");
                     }
