@@ -18,6 +18,7 @@ public class AnalizadorSintactico {
     private ArrayList<Token> arrayTokens; //Arreglo de tokens
     private boolean error;
     private int posicion;
+    private int[] syncToken;
 
     public AnalizadorSintactico(TablaSimbolo tablaSimbolo, AnalizadorLexico analizadorLexico) {
         this.tablaSimbolo = tablaSimbolo;
@@ -41,6 +42,7 @@ public class AnalizadorSintactico {
     }
 
     public void element() {
+        syncToken = new int[]{']', '}', ','};
         switch (token.getPunteroEntrada().getLexema()) {
             case "[":
                 array();
@@ -57,7 +59,9 @@ public class AnalizadorSintactico {
     }
 
     public void arrayPrima() {
-        elementList();
+        if (!"]".equals(token.getPunteroEntrada().getLexema())) {
+            elementList();
+        }
         match("]");
     }
 
@@ -67,7 +71,9 @@ public class AnalizadorSintactico {
     }
 
     public void objectPrima() {
-        attributeList();
+        if (!"}".equals(token.getPunteroEntrada().getLexema())) {
+            attributeList();
+        }
         match("}");
     }
 
@@ -77,6 +83,7 @@ public class AnalizadorSintactico {
     }
 
     public void elementListPrima() {
+        syncToken = new int[]{']'};
         if (',' == token.getComponenteLexico() && arrayTokens.get(posicion - 1).getComponenteLexico() != '[') {
             match(",");
             element();
@@ -90,6 +97,7 @@ public class AnalizadorSintactico {
     }
 
     public void attributeListPrima() {
+        syncToken = new int[]{'}'};
         if (',' == token.getComponenteLexico()) {
             match(",");
             attribute();
@@ -98,13 +106,18 @@ public class AnalizadorSintactico {
     }
 
     public void attribute() {
-        attributeName();
-        match(":");
-        attributeValue();
+        syncToken = new int[]{',','}', TokenEnum.STRING.getId()};
+        if (token.getComponenteLexico() != TokenEnum.COMA.getId()) {
+            attributeName();
+            match(":");
+            attributeValue();
+        }else{
+            error(TokenEnum.STRING.getNombreToken());
+        }
     }
 
     public void attributeName() {
-        if (token.getPunteroEntrada().getLexema().matches(".*")) {
+        if (token.getPunteroEntrada().getComponenteLexico() == TokenEnum.STRING.getId() && token.getComponenteLexico() != TokenEnum.COMA.getId()) {
             match(token.getPunteroEntrada().getLexema());
         } else {
             error(TokenEnum.STRING.getNombreToken());
@@ -126,7 +139,7 @@ public class AnalizadorSintactico {
             element();
         } else {
             error(TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + ", " + TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + ", "
-            + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + ", ELEMENT");
+                    + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + ", ELEMENT");
         }
     }
 
@@ -148,7 +161,24 @@ public class AnalizadorSintactico {
     public void error(String expectedToken) {
         this.error = true;
         System.err.printf("Error sintáctico. Se esperaba el token \'%s\', vino el el token \'%s\'.\n", expectedToken, token.getPunteroEntrada().getLexema());
-//        getToken();
+        scan();
+    }
+
+    public void scan() {
+        boolean sync = false;
+        do {
+            for (int i = 0; i < syncToken.length; i++) {
+                if (token.getComponenteLexico() == syncToken[i]) {
+                    sync = true;
+                    break;
+                }
+            }
+            getToken();
+        } while (token.getComponenteLexico() != TokenEnum.EOF.getId() && !sync);
+        if (token.getComponenteLexico() == TokenEnum.EOF.getId()) {
+            System.err.println("Error inesperado. Se llegó al final del archivo.");
+            System.exit(0);
+        }
     }
 
     public boolean isError() {
