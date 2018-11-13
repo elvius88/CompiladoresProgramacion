@@ -34,47 +34,40 @@ public class AnalizadorSintactico {
     }
 
     public void json() {
-        if (token.getComponenteLexico() == '{' || token.getComponenteLexico() == '[') {
-            element();
-        } else {
-            error("'{' o '['");
-        }
+        element();
     }
 
     public void element() {
-        syncToken = new int[]{']', '}', ','};
-        switch (token.getPunteroEntrada().getLexema()) {
-            case "[":
-                array();
-                break;
-            case "{":
-                object();
-                break;
+        if (token.getComponenteLexico() == TokenEnum.CORCHETE_IZQ.getId()) {
+            array();
+        } else if (token.getComponenteLexico() == TokenEnum.LLAVE_IZQ.getId()) {
+            object();
+        } else {
+            error("Error sintactico en el ELEMENT: Se esperaba " + TokenEnum.CORCHETE_IZQ.getNombreToken() + " o " 
+                    + TokenEnum.LLAVE_IZQ.getNombreToken() + ", vino " + token.getPunteroEntrada().getLexema());
         }
     }
 
     public void array() {
-        match("[");
-        arrayPrima();
+        if (TokenEnum.CORCHETE_IZQ.getId() == token.getComponenteLexico()) {
+            match("[");
+            arrayPrima();
+        } else {
+            error("Error sintactico en el ARRAY: Se esperaba " + TokenEnum.CORCHETE_IZQ.getNombreToken() + ", vino " 
+                    + token.getPunteroEntrada().getLexema());
+        }
     }
 
     public void arrayPrima() {
-        if (!"]".equals(token.getPunteroEntrada().getLexema())) {
+        if (TokenEnum.CORCHETE_IZQ.getId() == token.getComponenteLexico() || TokenEnum.LLAVE_IZQ.getId() == token.getComponenteLexico()) {
             elementList();
+            match("]");
+        } else if(TokenEnum.CORCHETE_DER.getId() == token.getComponenteLexico()){
+            match("]");
+        } else {
+            error("Error sintactico en el ARRAY_PRIMA: Se esperaba " + TokenEnum.CORCHETE_IZQ.getNombreToken() + " o " 
+                    + TokenEnum.LLAVE_IZQ.getNombreToken() + ", vino " + token.getPunteroEntrada().getLexema());
         }
-        match("]");
-    }
-
-    public void object() {
-        match("{");
-        objectPrima();
-    }
-
-    public void objectPrima() {
-        if (!"}".equals(token.getPunteroEntrada().getLexema())) {
-            attributeList();
-        }
-        match("}");
     }
 
     public void elementList() {
@@ -83,11 +76,32 @@ public class AnalizadorSintactico {
     }
 
     public void elementListPrima() {
-        syncToken = new int[]{']'};
-        if (',' == token.getComponenteLexico() && arrayTokens.get(posicion - 1).getComponenteLexico() != '[') {
+        if (TokenEnum.COMA.getId() == token.getComponenteLexico()) {
             match(",");
             element();
             elementListPrima();
+        }
+    }
+
+    public void object() {
+        if (TokenEnum.LLAVE_IZQ.getId() == token.getComponenteLexico()) {
+            match("{");
+            objectPrima();
+        } else {
+            error("Error sintactico en el OBJECT: Se esperaba " + TokenEnum.LLAVE_IZQ.getNombreToken() + ", vino " 
+                    + token.getPunteroEntrada().getLexema());
+        }
+    }
+
+    public void objectPrima() {
+        if (TokenEnum.STRING.getId() == token.getComponenteLexico()) {
+            attributeList();
+            match("}");
+        } else if(TokenEnum.LLAVE_DER.getId() == token.getComponenteLexico()){
+            match("}");
+        } else {
+            error("Error sintactico en el ARRAY_PRIMA: Se esperaba " + TokenEnum.CORCHETE_IZQ.getNombreToken() + " o " 
+                    + TokenEnum.LLAVE_IZQ.getNombreToken() + ", vino " + token.getPunteroEntrada().getLexema());
         }
     }
 
@@ -98,7 +112,7 @@ public class AnalizadorSintactico {
 
     public void attributeListPrima() {
         syncToken = new int[]{'}'};
-        if (',' == token.getComponenteLexico()) {
+        if (TokenEnum.COMA.getId() == token.getComponenteLexico()) {
             match(",");
             attribute();
             attributeListPrima();
@@ -106,13 +120,13 @@ public class AnalizadorSintactico {
     }
 
     public void attribute() {
-        syncToken = new int[]{',','}', TokenEnum.STRING.getId()};
-        if (token.getComponenteLexico() != TokenEnum.COMA.getId()) {
+        if (token.getComponenteLexico() == TokenEnum.STRING.getId()) {
             attributeName();
             match(":");
             attributeValue();
-        }else{
-            error(TokenEnum.STRING.getNombreToken());
+        } else {
+            error("Error sintactico en el ATTRIBUTE: Se esperaba " 
+                    + TokenEnum.STRING.getNombreToken() + ", vino '" + token.getPunteroEntrada().getLexema() +"'.");
         }
     }
 
@@ -120,7 +134,8 @@ public class AnalizadorSintactico {
         if (token.getPunteroEntrada().getComponenteLexico() == TokenEnum.STRING.getId() && token.getComponenteLexico() != TokenEnum.COMA.getId()) {
             match(token.getPunteroEntrada().getLexema());
         } else {
-            error(TokenEnum.STRING.getNombreToken());
+            error("Error sintactico en el ATTRIBUTE_NAME: Se esperaba " 
+                    + TokenEnum.STRING.getNombreToken() + ", vino '" + token.getPunteroEntrada().getLexema() +"'.");
         }
     }
 
@@ -135,11 +150,13 @@ public class AnalizadorSintactico {
             match(token.getPunteroEntrada().getLexema());
         } else if (TokenEnum.STRING.getId() == token.getComponenteLexico()) {
             match(token.getPunteroEntrada().getLexema());
-        } else if ('{' == token.getComponenteLexico() || '[' == token.getComponenteLexico()) {
+        } else if (TokenEnum.LLAVE_IZQ.getId() == token.getComponenteLexico() || TokenEnum.CORCHETE_IZQ.getId() == token.getComponenteLexico()) {
             element();
         } else {
-            error(TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + ", " + TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + ", "
-                    + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + ", ELEMENT");
+            error("Error sintactico en el ATTRIBUTE_VALUE: Se esperaba " 
+                    + TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + ", " + TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + ", "
+                    + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + "o ELEMENT, vino '"
+                    + token.getPunteroEntrada().getLexema() + "'");
         }
     }
 
@@ -147,7 +164,8 @@ public class AnalizadorSintactico {
         if (expToken.equals(token.getPunteroEntrada().getLexema())) {
             getToken();
         } else {
-            error(expToken);
+            error("Error sintactico en el matching: Se esperaba '" 
+                    + expToken + "', vino '" + token.getPunteroEntrada().getLexema() +"'.");
         }
     }
 
@@ -158,10 +176,9 @@ public class AnalizadorSintactico {
         }
     }
 
-    public void error(String expectedToken) {
+    public void error(String mensajeError) {
         this.error = true;
-        System.err.printf("Error sintáctico. Se esperaba el token \'%s\', vino el el token \'%s\'.\n", expectedToken, token.getPunteroEntrada().getLexema());
-        scan();
+        System.err.println(mensajeError);
     }
 
     public void scan() {
