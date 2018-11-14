@@ -5,6 +5,10 @@ import compiladores.analizadorlexico.lexer.Token;
 import compiladores.enums.TokenEnum;
 import compiladores.tabla.TablaSimbolo;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -18,11 +22,14 @@ public class AnalizadorSintactico {
     private ArrayList<Token> arrayTokens; //Arreglo de tokens
     private boolean error;
     private int posicion;
-    private int[] syncToken;
+    private List<Integer> syncToken;
+    private Map<String, List<Integer>> siguiente;
+    private String index;
 
     public AnalizadorSintactico(TablaSimbolo tablaSimbolo, AnalizadorLexico analizadorLexico) {
         this.tablaSimbolo = tablaSimbolo;
         this.analizadorLexico = analizadorLexico;
+        this.error = true;
     }
 
     public void init() {
@@ -30,6 +37,8 @@ public class AnalizadorSintactico {
         this.token = arrayTokens.get(0);
         this.posicion = 0;
         this.error = false;
+        this.index = "";
+        conjuntoSiguiente();
         json();
     }
 
@@ -59,6 +68,7 @@ public class AnalizadorSintactico {
     }
 
     public void arrayPrima() {
+        this.index = "ARRAY_PRIMA";
         if (TokenEnum.CORCHETE_IZQ.getId() == token.getComponenteLexico() || TokenEnum.LLAVE_IZQ.getId() == token.getComponenteLexico()) {
             elementList();
             match("]");
@@ -84,6 +94,7 @@ public class AnalizadorSintactico {
     }
 
     public void object() {
+        this.index = "OBJECT";
         if (TokenEnum.LLAVE_IZQ.getId() == token.getComponenteLexico()) {
             match("{");
             objectPrima();
@@ -94,6 +105,7 @@ public class AnalizadorSintactico {
     }
 
     public void objectPrima() {
+        this.index = "OBJECT_PRIMA";
         if (TokenEnum.STRING.getId() == token.getComponenteLexico()) {
             attributeList();
             match("}");
@@ -111,7 +123,6 @@ public class AnalizadorSintactico {
     }
 
     public void attributeListPrima() {
-        syncToken = new int[]{'}'};
         if (TokenEnum.COMA.getId() == token.getComponenteLexico()) {
             match(",");
             attribute();
@@ -120,6 +131,7 @@ public class AnalizadorSintactico {
     }
 
     public void attribute() {
+        this.index = "ATTRIBUTE";
         if (token.getComponenteLexico() == TokenEnum.STRING.getId()) {
             attributeName();
             match(":");
@@ -131,7 +143,8 @@ public class AnalizadorSintactico {
     }
 
     public void attributeName() {
-        if (token.getPunteroEntrada().getComponenteLexico() == TokenEnum.STRING.getId() && token.getComponenteLexico() != TokenEnum.COMA.getId()) {
+        this.index = "ATTRIBUTENAME";
+        if (token.getComponenteLexico() == TokenEnum.STRING.getId() && token.getComponenteLexico() != TokenEnum.COMA.getId()) {
             match(token.getPunteroEntrada().getLexema());
         } else {
             error("Error sintactico en el ATTRIBUTE_NAME: Se esperaba " 
@@ -140,6 +153,7 @@ public class AnalizadorSintactico {
     }
 
     public void attributeValue() {
+        this.index = "ATTRIBUTEVALUE";
         if (TokenEnum.PR_BOOLEANO_FALSE.getId() == token.getComponenteLexico()) {
             match(token.getPunteroEntrada().getLexema());
         } else if (TokenEnum.PR_BOOLEANO_TRUE.getId() == token.getComponenteLexico()) {
@@ -155,7 +169,7 @@ public class AnalizadorSintactico {
         } else {
             error("Error sintactico en el ATTRIBUTE_VALUE: Se esperaba " 
                     + TokenEnum.PR_BOOLEANO_FALSE.getNombreToken() + ", " + TokenEnum.PR_BOOLEANO_TRUE.getNombreToken() + ", "
-                    + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + "o ELEMENT, vino '"
+                    + TokenEnum.PR_NULL.getNombreToken() + ", " + TokenEnum.NUM.getNombreToken() + ", " + TokenEnum.STRING.getNombreToken() + " o ELEMENT, vino '"
                     + token.getPunteroEntrada().getLexema() + "'");
         }
     }
@@ -179,25 +193,38 @@ public class AnalizadorSintactico {
     public void error(String mensajeError) {
         this.error = true;
         System.err.println(mensajeError);
+        scan();
     }
 
-    public void scan() {
+    private void scan() {
+        getToken();
+        synchronize();
+    }
+
+    private void synchronize(){
         boolean sync = false;
+        syncToken = siguiente.get(index);
         do {
-            for (int i = 0; i < syncToken.length; i++) {
-                if (token.getComponenteLexico() == syncToken[i]) {
+            for (Integer syncT : syncToken) {
+                if (syncT.equals(token.getComponenteLexico())) {
                     sync = true;
                     break;
                 }
             }
-            getToken();
+            if (!sync) {
+                getToken();
+            }
         } while (token.getComponenteLexico() != TokenEnum.EOF.getId() && !sync);
+        verificarSiEsEof();
+    }
+    
+    private void verificarSiEsEof() {
         if (token.getComponenteLexico() == TokenEnum.EOF.getId()) {
             System.err.println("Error inesperado. Se llegó al final del archivo.");
             System.exit(0);
         }
     }
-
+    
     public boolean isError() {
         return error;
     }
@@ -206,4 +233,20 @@ public class AnalizadorSintactico {
         this.error = error;
     }
 
+    private void conjuntoSiguiente(){
+        siguiente = new HashMap<>();
+        siguiente.put("JSON", new ArrayList<>());
+        siguiente.put("ELEMENT", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.CORCHETE_DER.getId(), TokenEnum.COMA.getId()));
+        siguiente.put("ARRAY", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.CORCHETE_DER.getId(), TokenEnum.COMA.getId()));
+        siguiente.put("ARRAY_PRIMA", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.COMA.getId()));
+        siguiente.put("OBJECT", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.CORCHETE_DER.getId(), TokenEnum.COMA.getId()));
+        siguiente.put("OBJECT_PRIMA", Arrays.asList(TokenEnum.CORCHETE_DER.getId(), TokenEnum.LLAVE_DER.getId(), TokenEnum.COMA.getId()));
+        siguiente.put("ELEMENTLIST", Arrays.asList(TokenEnum.CORCHETE_DER.getId()));
+        siguiente.put("ELEMENTLIST_PRIMA", Arrays.asList(TokenEnum.CORCHETE_DER.getId()));
+        siguiente.put("ATTRIBUTELIST", Arrays.asList(TokenEnum.LLAVE_DER.getId()));
+        siguiente.put("ATTRIBUTELIST_PRIMA", Arrays.asList(TokenEnum.LLAVE_DER.getId()));
+        siguiente.put("ATTRIBUTE", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.COMA.getId()));
+        siguiente.put("ATTRIBUTENAME", Arrays.asList(TokenEnum.DOS_PUNTOS.getId()));
+        siguiente.put("ATTRIBUTEVALUE", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.COMA.getId()));
+    }
 }

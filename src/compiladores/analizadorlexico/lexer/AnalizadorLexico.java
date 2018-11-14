@@ -135,9 +135,9 @@ public class AnalizadorLexico {
                             entrada.setComponenteLexico(TokenEnum.STRING.getId());
                         }
                         tablaSimbolo.insertar(entrada);
-                        token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
-                        token.setComponenteLexico(entrada.getComponenteLexico());
                     }
+                    token.setPunteroEntrada(tablaSimbolo.buscar(lexema));
+                    token.setComponenteLexico(TokenEnum.STRING.getId());
                     break;
                 case '0':
                 case '1':
