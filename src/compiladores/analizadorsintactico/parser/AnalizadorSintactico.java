@@ -249,4 +249,12 @@ public class AnalizadorSintactico {
         siguiente.put("ATTRIBUTENAME", Arrays.asList(TokenEnum.DOS_PUNTOS.getId()));
         siguiente.put("ATTRIBUTEVALUE", Arrays.asList(TokenEnum.LLAVE_DER.getId(), TokenEnum.COMA.getId()));
     }
+
+    public ArrayList<Token> getArrayTokens() {
+        return arrayTokens;
+    }
+
+    public void setArrayTokens(ArrayList<Token> arrayTokens) {
+        this.arrayTokens = arrayTokens;
+    }
 }

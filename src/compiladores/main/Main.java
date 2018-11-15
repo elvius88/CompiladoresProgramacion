@@ -1,6 +1,7 @@
 package compiladores.main;
 
 import compiladores.analizadorlexico.lexer.AnalizadorLexico;
+import compiladores.analizadorsemantico.Traductor;
 import compiladores.analizadorsintactico.parser.AnalizadorSintactico;
 import compiladores.tabla.TablaSimbolo;
 
@@ -32,8 +33,10 @@ public class Main {
             System.out.println("\033[32m1) Análisis léxico sin errores.\033[30m");
             parser.init();
         }
+        Traductor traductor = new Traductor(tablaSimbolo, parser);
         if (!parser.isError()){
             System.out.println("\033[32m2) Análisis sintáctico sin errores.\033[30m");
+            traductor.init();
         }
         //Termina de ejecutarse el programa
         System.exit(0);
