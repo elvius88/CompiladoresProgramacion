@@ -7,3 +7,6 @@ autor: Elvio Teófilo Contreras Martínez
 
 - Segundo Trabajo Práctico: Analizador Sintáctico.
      Entrega: 13-nov-2018
+
+- Tercer Trabajo Práctico: Traducción dirigida por Sintáxis
+     Entrega: 01-dic-2018
