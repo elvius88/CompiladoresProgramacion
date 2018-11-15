@@ -17,7 +17,8 @@ public class Traductor {
     private Token token;
     private AnalizadorSintactico analizadorSintactico;
     private TablaSimbolo tablaSimbolo;
-    private ArrayList<Token> arrayTokens; //Arreglo de tokens
+    private List<Token> arrayTokens; //Arreglo de tokens
+    private List<String> parents; //Arreglo de tokens
     private boolean error;
     private int posicion;
     private List<Integer> syncToken;
@@ -34,6 +35,7 @@ public class Traductor {
     public void init() {
         this.arrayTokens = analizadorSintactico.getArrayTokens();
         this.token = arrayTokens.get(0);
+        this.parents = new ArrayList<>();
         this.posicion = 0;
         this.error = false;
         this.index = "";
@@ -65,6 +67,7 @@ public class Traductor {
 
     public void arrayTrad() {
         if (TokenEnum.CORCHETE_IZQ.getId() == token.getComponenteLexico()) {
+            addChildName();
             match("[");
             arrayPrimaTrad();
         } else {
@@ -76,8 +79,10 @@ public class Traductor {
     public void arrayPrimaTrad() {
         if (TokenEnum.CORCHETE_IZQ.getId() == token.getComponenteLexico() || TokenEnum.LLAVE_IZQ.getId() == token.getComponenteLexico()) {
             elementListTrad();
+            removeChildName();
             match("]");
         } else if(TokenEnum.CORCHETE_DER.getId() == token.getComponenteLexico()){
+            removeChildName();
             match("]");
         }
     }
@@ -158,7 +163,7 @@ public class Traductor {
         }
     }
 
-    public boolean estaEnArray() {
+    private boolean estaEnArray() {
         int pos = posicion - 1;
         int[] compLex = new int[3];
         int i = 0;
@@ -175,13 +180,29 @@ public class Traductor {
         return false;
     }
 
-    public void match(String expToken) {
+    private void match(String expToken) {
         if (expToken.equals(token.getPunteroEntrada().getLexema())) {
             getToken();
         }
     }
 
-    public String getChildName() {
+    private void addChildName() {
+        int pos = posicion - 2;
+        if (pos > 0 && pos < arrayTokens.size()) {
+            String name = arrayTokens.get(pos).getPunteroEntrada().getLexema().replace("\"", "").trim();
+            parents.add(name);
+        }
+    }
+
+    private void removeChildName() {
+        parents.remove(parents.size()-1);
+    }
+
+    public String getParentName() {
+        return parents.get(parents.size()-1);
+    }
+    
+    private String getChildName() {
         String nameParent = getParentName();
         if (nameParent.endsWith("es")) {
             return nameParent.substring(0, nameParent.length()-2);
@@ -192,19 +213,6 @@ public class Traductor {
         }
     }
     
-    public String getParentName() {
-        int pos = posicion - 1;
-        int i = 0;
-        while (pos >= 0 && pos < arrayTokens.size() && arrayTokens.get(pos).getComponenteLexico() != TokenEnum.CORCHETE_IZQ.getId()) {
-            pos--;
-        }
-        pos -= 2;
-        if (pos > 0 && pos < arrayTokens.size()) {
-            return arrayTokens.get(pos).getPunteroEntrada().getLexema().replace("\"", "").trim();
-        }
-        return "";
-    }
-
     public void getToken() {
         posicion++;
         if (posicion < arrayTokens.size()) {
